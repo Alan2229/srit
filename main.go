@@ -88,29 +88,28 @@ func (b *MyLibrary) TakeBookById(Id string) Book {
 	return Book{}
 }
 
+var tp int = 0
+
 func (b *MyLibrary) AddBook(books ...SimBook) {
 
 	for _, val := range books {
 		var t Book
 		t.Author = val.Author
 		t.BookName = val.BookName
-
-		//Обычный способ генерирование уникального символа
-		/*
+		if tp == 0 {
+			//Обычный способ генерирование уникального символа
 			t.Id = b.lastId
 			intId, _ := strconv.Atoi(b.lastId)
-			b.booksId[intId] = t
+			b.booksId[b.lastId] = t
 			intId++
 			lId := strconv.Itoa(intId)
 			b.lastId = lId
-		*/
-
-		// Способ через UUID
-		///*
-		t.Id = b.lastId
-		var x = uuid.New().String()
-		b.lastId = x
-		//*/
+		} else {
+			// Способ через UUID
+			t.Id = b.lastId
+			var x = uuid.New().String()
+			b.lastId = x
+		}
 		b.booksName[val.BookName] = t
 		b.books = append(b.books, t)
 	}
@@ -118,6 +117,7 @@ func (b *MyLibrary) AddBook(books ...SimBook) {
 
 func (b *MyLibrary) Searcher(name string) (*Book, bool) {
 	val, ok := b.booksName[name]
+	fmt.Println(val, " + ", name)
 	if !ok {
 		return nil, false
 	}
@@ -172,9 +172,53 @@ func (b *MyLibrary) TakeBooksById(ids ...string) []Book {
 }
 
 func main() {
-	var t Library
-	t = NewLibrary("some address")
-	t.AddBook(SimBook{"1984", "George Orwell"})
-	fmt.Println(t.TakeBookByName("1984"))
-	fmt.Println(1000000007)
+	// Создаем слайс книг
+	books := []SimBook{
+		{"1984", "Джордж Оруэлл"},
+		{"Убить пересмешника", "Харпер Ли"},
+		{"Великий Гэтсби", "Ф. Скотт Фицджеральд"},
+		{"Гордость и предубеждение", "Джейн Остин"},
+	}
+
+	// Создаем библиотеку
+	lib := NewLibrary("Некоторый адрес")
+
+	// Загружаем книги в библиотеку
+	lib.AddBook(books...)
+
+	// Ищем 1-2 книги в библиотеке
+	fmt.Println("Поиск книги '1984':")
+	book1, found := lib.Searcher("1984")
+	if found {
+		fmt.Println("Найдена:", *book1)
+	} else {
+		fmt.Println("Книга не найдена")
+	}
+
+	fmt.Println("Берем книгу 'Великий Гэтсби':")
+	takenBook := lib.TakeBookByName("Великий Гэтсби")
+	if (takenBook != Book{}) {
+		fmt.Println("Взята:", takenBook)
+	} else {
+		fmt.Println("Книга не найдена или уже взята")
+	}
+	// Заменяем функцию генерации ID на UUID
+	fmt.Println("\nЗаменяем функцию генерации ID на UUID")
+	lib.lastId = uuid.NewString()
+	tp = 1
+	// Добавляем больше книг
+	newBooks := []SimBook{
+		{"Моби Дик", "Герман Мелвилл"},
+		{"Война и мир", "Лев Толстой"},
+	}
+	lib.AddBook(newBooks...)
+
+	// Ищем еще одну книгу в библиотеке
+	fmt.Println("\nПоиск книги 'Моби Дик':")
+	book2, found := lib.Search("Моби Дик")
+	if found {
+		fmt.Println("Найдена:", *book2)
+	} else {
+		fmt.Println("Книга не найдена")
+	}
 }
